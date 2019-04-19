@@ -8,14 +8,36 @@ import {
   TouchableOpacity,
   View,
 } from 'react-native';
-import { WebBrowser } from 'expo';
+import { WebBrowser,SQLite } from 'expo';
 
 import { MonoText } from '../components/StyledText';
+
+const db = SQLite.openDatabase('db.db');
 
 export default class HomeScreen extends React.Component {
   static navigationOptions = {
     header: null,
   };
+  constructor(props){
+    super(props);
+    this.state = {
+      items : {},
+    }
+  }
+  componentDidMount(){
+    this.update();
+  }
+
+  update() {
+    db.transaction(tx => {
+      tx.executeSql(
+        `select * from user where isLog = ? ;`,
+        [1],
+        (_, { rows: { _array } }) => this.setState({ items: JSON.stringify(_array) })
+      );
+    });
+    console.log("items",this.state.items);
+}
 
   render() {
     return (
@@ -42,7 +64,7 @@ export default class HomeScreen extends React.Component {
             </View>
 
             <Text style={styles.getStartedText}>
-              Change this text and your app will automatically reload.
+              LE NOM MAM7NE {this.state.items.nameUser}
             </Text>
           </View>
 

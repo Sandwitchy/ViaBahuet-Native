@@ -11,14 +11,7 @@ export default class App extends React.Component {
     try{
       db.transaction(tx => {
         tx.executeSql(
-          'create table if not exists user ( idUser integer NOT NULL primary key, nameUser text NOT NULL,preUser text NOT NULL,mailUser text NOT NULL, passUser text NOT NULL,loginUser text NOT NULL,telUser text DEFAULT NULL, rueUser text DEFAULT NULL,INSEE integer DEFAULT NULL,descUser text DEFAULT NULL)'
-        );
-      });
-      db.transaction(tx => {
-        tx.executeSql(
-          'select * form user',
-          [],
-          (_, { rows: { _array } }) => console.log(_array)
+          'create table if not exists user ( idUser integer NOT NULL primary key, nameUser text NOT NULL,preUser text NOT NULL,mailUser text NOT NULL, passUser text NOT NULL,loginUser text NOT NULL,telUser text DEFAULT NULL, rueUser text DEFAULT NULL,INSEE integer DEFAULT NULL,descUser text DEFAULT NULL,isLog integer not null);'
         );
       });
       console.log('all is fine');
@@ -57,12 +50,16 @@ export default class App extends React.Component {
         this.setState({
           isLog: true
         });
-        console.log(responseJson);
         // INSERTION SQLITE
         try {
           db.transaction(tx => {
             tx.executeSql(
-              'insert into user [(idUser,nameUser,preUser,mailUser,passUser,loginUser,telUser,rueUser,INSEE,descUser)] values (?,?,?,?,?,?,?,?,?,?)',
+              'update user set isLog = 0 where isLog = 1;',[]
+            )
+          });
+          db.transaction(tx => {
+            tx.executeSql(
+              'insert into user[(idUser,nameUser,preUser,mailUser,passUser,loginUser,telUser,rueUser,INSEE,descUser,isLog)] values(?,?,?,?,?,?,?,?,?,?,1);',
               [responseJson.idUser,responseJson.nameUser,responseJson.preUser,responseJson.mailUser,responseJson.passUser,responseJson.loginUser,responseJson.telUser,responseJson.rueUser,responseJson.INSEE,responseJson.descUser]
             )
           });
