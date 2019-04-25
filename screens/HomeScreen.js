@@ -12,32 +12,53 @@ import { WebBrowser,SQLite } from 'expo';
 
 import { MonoText } from '../components/StyledText';
 
-const db = SQLite.openDatabase('db.db');
+const db = SQLite.openDatabase('database.db');
+
+class Items extends React.Component{
+  state = {
+    items: null
+  };
+  componentDidMount(){
+    db.transaction(tx => {
+      tx.executeSql(
+        `select * from user where islog = ?;`,
+        [1],
+        (_, { rows: { _array } }) => this.setState({ items: _array })
+      );
+    });
+  }
+  render() {
+    const { items } = this.state;
+
+    if (items === null || items.length === 0) {
+      return null;
+    }
+    console.log(items);
+    return (
+      <View style={styles.sectionContainer}>
+        <Text style={styles.sectionHeading}>Le nom mamène</Text>
+        {items.map(({ nameuser }) => (
+            <Text style={{ color: done ? '#fff' : '#000' }}>{nameuser}</Text>
+        ))}
+      </View>
+    );
+  }
+}
 
 export default class HomeScreen extends React.Component {
   static navigationOptions = {
     header: null,
   };
-  constructor(props){
-    super(props);
-    this.state = {
-      items : {},
-    }
-  }
+  
   componentDidMount(){
-    this.update();
-  }
-
-  update() {
     db.transaction(tx => {
       tx.executeSql(
-        `select * from user where isLog = ? ;`,
+        `select * from user where islog = ?;`,
         [1],
-        (_, { rows: { _array } }) => this.setState({ items: JSON.stringify(_array) })
+        (_, { rows: { _array } }) => this.setState({ items: _array })
       );
     });
-    console.log("items",this.state.items);
-}
+  }
 
   render() {
     return (
@@ -62,10 +83,7 @@ export default class HomeScreen extends React.Component {
             <View style={[styles.codeHighlightContainer, styles.homeScreenFilename]}>
               <MonoText style={styles.codeHighlightText}>screens/HomeScreen.js</MonoText>
             </View>
-
-            <Text style={styles.getStartedText}>
-              LE NOM MAM7NE {this.state.items.nameUser}
-            </Text>
+            <Items></Items>
           </View>
 
           <View style={styles.helpContainer}>

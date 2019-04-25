@@ -3,42 +3,47 @@ import { Platform, StatusBar, StyleSheet, View,ScrollView,TextInput,Button,Text 
 import { AppLoading, Asset, Font, Icon, SQLite } from 'expo';
 import AppNavigator from './navigation/AppNavigator';
 
-const db = SQLite.openDatabase('db.db');
+const db = SQLite.openDatabase('database.db');
 
 export default class App extends React.Component {
 
   componentDidMount() {
-    try{
       db.transaction(tx => {
         tx.executeSql(
-          'create table if not exists user ( idUser integer NOT NULL primary key, nameUser text NOT NULL,preUser text NOT NULL,mailUser text NOT NULL, passUser text NOT NULL,loginUser text NOT NULL,telUser text DEFAULT NULL, rueUser text DEFAULT NULL,INSEE integer DEFAULT NULL,descUser text DEFAULT NULL,isLog integer not null);'
+          'create table if not exists user( iduser integer not null, nameuser text not null, preuser text not null, mailuser text not null, passuser text not null, loginuser text not null,teluser text, rueuser text, insee integer, descuser text, islog integer not null);'
+          ,[]
         );
       });
-      console.log('all is fine');
-    }catch(error){
-      console.warn('bite',error);
-    }
-    
+       db.transaction(tx => {
+         tx.executeSql(
+           'update user set islog = 0 where islog = 1;', []
+        );
+       });
+       db.transaction(tx => {
+        tx.executeSql(
+          `select * from user ;`,
+          [],
+          (_, { rows }) => console.log('DB:',JSON.stringify(rows))
+        );
+      });
   }
+  state = {
+    isLoadingComplete: false,
+    ident: "",
+    pass: "",
+    isLog:false,
+  };
 
-  constructor(props){
-    super(props);
-    this.state = {
-      isLoadingComplete: false,
-      ident: "",
-      pass: "",
-      isLog:false,
-    };
-  }
+  _login = async () => { 
 
-  _login = async () => {
     let Ident = this.state.ident;
     let Pass = this.state.pass;
-    console.log(Ident,Pass);
+
     try {
       const response = await fetch('http://viabahuet.andreafratani.fr/fetchUser.php?user=' + Ident + '&mdp=' + Pass);
       const responseJson = await response.json();
-      if (typeof responseJson.error !== 'undefined') { //Mauvais user ou erreur
+      console.log(responseJson);
+      if (typeof responseJson.error !== 'undefined'){ //Mauvais user ou erreur
         this.setState({
           isLog: false,
           ident: "",
@@ -46,32 +51,30 @@ export default class App extends React.Component {
         });
         alert("Erreur d'identifiant ou de mot de passe.Veuillez réessayer.");
       }else{ 
-        // connexion réusi
-        this.setState({
-          isLog: true
-        });
         // INSERTION SQLITE
-        try {
+        /*
+        ------------------------------------------------
+          Problème (ne retourne rien et n'execute rien)
+        -------------------------------------------------
+        */
           db.transaction(tx => {
             tx.executeSql(
-              'update user set isLog = 0 where isLog = 1;',[]
+              'insert into user(iduser, nameuser, islog) values(?, ?, 1)',
+              [responseJson.idUser,responseJson.nameUser],
+              (_, { rowsAffected  }) =>
+              console.log("Affected :",JSON.stringify(rowsAffected ))
             )
           });
-          db.transaction(tx => {
-            tx.executeSql(
-              'insert into user[(idUser,nameUser,preUser,mailUser,passUser,loginUser,telUser,rueUser,INSEE,descUser,isLog)] values(?,?,?,?,?,?,?,?,?,?,1);',
-              [responseJson.idUser,responseJson.nameUser,responseJson.preUser,responseJson.mailUser,responseJson.passUser,responseJson.loginUser,responseJson.telUser,responseJson.rueUser,responseJson.INSEE,responseJson.descUser]
-            )
-          });
-        } catch (error) {
-          console.warn(error);
-        }
-        
+          //----------------------------------------------------------------
       }
     }// erreur AJAX
     catch (error) {
       console.error(error);
     }
+    // connexion réusi
+     this.setState({
+       isLog: true
+     });
   }
 
   render() {
@@ -115,9 +118,11 @@ export default class App extends React.Component {
               title="Se connecter" 
               onPress={this._login}></Button>
               <Text style={{padding: 10, fontSize: 42}}>
-              Ident :{this.state.ident}
-              Pass :{this.state.pass}
-            </Text>
+                Ident :{this.state.ident}
+              </Text>
+              <Text style={{padding: 10, fontSize: 42}}>
+                Pass :{this.state.pass}
+              </Text>
             </ScrollView>
           </View>
         );
