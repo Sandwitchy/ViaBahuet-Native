@@ -3,28 +3,37 @@ import { Platform, StatusBar, StyleSheet, View,ScrollView,TextInput,Button,Text 
 import { AppLoading, Asset, Font, Icon, SQLite } from 'expo';
 import AppNavigator from './navigation/AppNavigator';
 
-const db = SQLite.openDatabase('database.db');
+const db = SQLite.openDatabase('db.db');
 
 export default class App extends React.Component {
 
   componentDidMount() {
-      db.transaction(tx => {
-        tx.executeSql(
-          'create table if not exists user( iduser integer not null, nameuser text not null, preuser text not null, mailuser text not null, passuser text not null, loginuser text not null,teluser text, rueuser text, insee integer, descuser text, islog integer not null);'
-          ,[]
-        );
-      });
-       db.transaction(tx => {
-         tx.executeSql(
-           'update user set islog = 0 where islog = 1;', []
-        );
-       });
-       db.transaction(tx => {
-        tx.executeSql(
-          `select * from user ;`,
-          [],
-          (_, { rows }) => console.log('DB:',JSON.stringify(rows))
-        );
+      db.transaction(
+        tx => {
+           /*
+            tx.executeSql(
+              'drop table user;'
+              ,[], (_, { rowsAffected }) =>
+              console.log(JSON.stringify(rowsAffected))
+            , (_, error) =>
+              console.log(error)
+            );
+          // */
+          tx.executeSql(
+            'create table if not exists user( iduser integer not null, nameuser text not null,photouser text not null, preuser text not null, mailuser text not null, passuser text not null, loginuser text not null,teluser text, rueuser text, insee integer, descuser text, islog integer not null);'
+            ,[], (_, { rowsAffected }) =>
+            console.log(JSON.stringify(rowsAffected))
+          , (_, error) =>
+            console.log(error)
+          );
+          tx.executeSql('select * from user', [], (_, { rows }) =>
+            console.log(JSON.stringify(rows))
+          , (_, error) =>
+            console.log(error)
+          );
+          tx.executeSql(
+            'update user set islog = 0 where islog = 1;', []
+          );
       });
   }
   state = {
@@ -42,7 +51,6 @@ export default class App extends React.Component {
     try {
       const response = await fetch('http://viabahuet.andreafratani.fr/fetchUser.php?user=' + Ident + '&mdp=' + Pass);
       const responseJson = await response.json();
-      console.log(responseJson);
       if (typeof responseJson.error !== 'undefined'){ //Mauvais user ou erreur
         this.setState({
           isLog: false,
@@ -50,31 +58,34 @@ export default class App extends React.Component {
           pass: "",
         });
         alert("Erreur d'identifiant ou de mot de passe.Veuillez réessayer.");
+
       }else{ 
-        // INSERTION SQLITE
-        /*
-        ------------------------------------------------
-          Problème (ne retourne rien et n'execute rien)
-        -------------------------------------------------
-        */
-          db.transaction(tx => {
-            tx.executeSql(
-              'insert into user(iduser, nameuser, islog) values(?, ?, 1)',
-              [responseJson.idUser,responseJson.nameUser],
-              (_, { rowsAffected  }) =>
-              console.log("Affected :",JSON.stringify(rowsAffected ))
-            )
+        
+          // INSERTION SQLITE
+          await db.transaction(tx => {
+                  tx.executeSql(
+                    'delete from user where iduser = ?',
+                    [responseJson.idUser],
+                    (_, { rowsAffected  }) => console.log("Affected delete:",JSON.stringify( rowsAffected )),
+                    (_, error) => console.log(error)
+                  );
+                  tx.executeSql(
+                    'insert into user (iduser, nameuser, preuser , descuser, mailuser, loginuser, passuser, insee, rueuser, photouser, islog) values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 1)',
+                    [responseJson.idUser,responseJson.nameUser,responseJson.preUser,responseJson.descUser,responseJson.mailUser,responseJson.loginUser,responseJson.passUser,responseJson.INSEE,responseJson.rueUser,responseJson.photoUser],
+                    (_, { rowsAffected  }) => console.log("Affected :",JSON.stringify( rowsAffected )),
+                    (_, error) => console.log(error)
+                  );
+                });
+          // connexion réusi
+          this.setState({
+            isLog: true
           });
-          //----------------------------------------------------------------
+        
       }
     }// erreur AJAX
     catch (error) {
       console.error(error);
     }
-    // connexion réusi
-     this.setState({
-       isLog: true
-     });
   }
 
   render() {
