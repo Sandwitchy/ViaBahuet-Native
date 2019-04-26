@@ -70,8 +70,8 @@ export default class App extends React.Component {
                     (_, error) => console.log(error)
                   );
                   tx.executeSql(
-                    'insert into user (iduser, nameuser, preuser , descuser, mailuser, loginuser, passuser, insee, rueuser, photouser, islog) values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 1)',
-                    [responseJson.idUser,responseJson.nameUser,responseJson.preUser,responseJson.descUser,responseJson.mailUser,responseJson.loginUser,responseJson.passUser,responseJson.INSEE,responseJson.rueUser,responseJson.photoUser],
+                    'insert into user (iduser, nameuser, preuser , descuser, mailuser, loginuser, passuser, insee, rueuser, photouser, teluser, islog) values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 1)',
+                    [responseJson.idUser,responseJson.nameUser,responseJson.preUser,responseJson.descUser,responseJson.mailUser,responseJson.loginUser,responseJson.passUser,responseJson.INSEE,responseJson.rueUser,responseJson.photoUser,responseJson.telUser],
                     (_, { rowsAffected  }) => console.log("Affected :",JSON.stringify( rowsAffected )),
                     (_, error) => console.log(error)
                   );

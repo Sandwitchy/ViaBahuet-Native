@@ -10,14 +10,12 @@ import {
 } from 'react-native';
 import { WebBrowser,SQLite } from 'expo';
 
-import { MonoText } from '../components/StyledText';
-
 const db = SQLite.openDatabase('db.db');
 
 
 export default class HomeScreen extends React.Component {
   static navigationOptions = {
-    header: null,
+    title: "Mon Profil",
   };
   state = {
     //mode = 0 (read) || mode = 1 (write)
@@ -38,7 +36,19 @@ export default class HomeScreen extends React.Component {
   render() {
     var { items } = this.state;
     if((items == null)||(items.lenght == 0)){
-      return null;
+     
+      return(
+        <View style={styles.container}>
+          <ScrollView style={styles.container} contentContainerStyle={styles.contentContainer}>
+            <Image  style={{
+                          width: 400,
+                          height: 400,
+                          resizeMode: 'contain',
+                        }} 
+                    source={ require('./../assets/images/pizza.gif')} />
+          </ScrollView>
+        </View>
+      );
     }
     //*************************************************
     // mode read
@@ -47,23 +57,39 @@ export default class HomeScreen extends React.Component {
       return (
         <View style={styles.container}>
           <ScrollView style={styles.container} contentContainerStyle={styles.contentContainer}>
-              {items.map(({ nameuser,preuser,photouser }) => (
-                <View style={{flex: 1, flexDirection: 'row'}}>
-                    <Image style={{
-                        width: 150,
-                        height: 150,
-                        resizeMode: 'contain',
-                      }} source={{
-                        uri: photouser
-                      }}/>
-                      <View style={{width: 150, height: 150,}}>
-                        <Text style={styles.important}>
-                          {nameuser}
-                        </Text>
-                        <Text style={styles.important}>
-                          {preuser}
-                        </Text>
-                      </View>
+              {items.map(({ nameuser,preuser,photouser, teluser, rueuser,descuser }) => (
+                <View>
+                  <View style={{flex: 1, flexDirection: 'row'}}>
+                      <Image style={{
+                          width: 150,
+                          height: 150,
+                          resizeMode: 'contain',
+                          marginLeft: 5,
+                          marginRight: 10,
+                          marginBottom: 10,
+                        }} source={{
+                          uri: photouser
+                        }}/>
+                        <View style={{width: 150, height: 150,}}>
+                          <Text key={nameuser} style={styles.important}>
+                            Nom : {nameuser}
+                          </Text>
+                          <Text key={preuser} style={styles.important}>
+                            Prénom :{preuser}
+                          </Text>
+                          <Text key={teluser}>
+                            Téléphone : {teluser}
+                          </Text>
+                        </View>
+                  </View>
+                  <View>
+                    <Text>
+                      Adresse : {rueuser}
+                    </Text>
+                    <Text>
+                      Description : {descuser}
+                    </Text>
+                  </View>
                 </View>
               ))}
           </ScrollView>
