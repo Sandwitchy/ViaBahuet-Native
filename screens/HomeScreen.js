@@ -5,10 +5,12 @@ import {
   ScrollView,
   StyleSheet,
   Text,
+  TextInput,
   TouchableOpacity,
+  TouchableHighlight,
   View,
 } from 'react-native';
-import { WebBrowser,SQLite } from 'expo';
+import { SQLite } from 'expo';
 
 const db = SQLite.openDatabase('db.db');
 
@@ -20,7 +22,8 @@ export default class HomeScreen extends React.Component {
   state = {
     //mode = 0 (read) || mode = 1 (write)
     mode : 0,
-    items: null
+    items: null,
+    change: null,
   };
   
   componentDidMount(){
@@ -28,18 +31,31 @@ export default class HomeScreen extends React.Component {
       tx.executeSql(
         `select * from user where islog = ?;`,
         [1],
-        (_, { rows: { _array } }) => this.setState({ items: _array })
+        (_, { rows: { _array } }) => this.setState({ items: _array}),
+        (_, error) => console.log(error)
       );
     });
+    if(this.state.change == null){
+      const items =  this.state.items;
+      const changenew = items;                        //updating value
+      if(changenew != null){
+        console.log(changenew,items);
+      }
+      this.setState({change: changenew});
+      console.log("change:",this.state.change);
+    }
   }
 
+  _setMode(bool) {
+    this.setState({mode : bool});
+  }
   render() {
     var { items } = this.state;
     if((items == null)||(items.lenght == 0)){
-     
+     // Loading Screen
       return(
-        <View style={styles.container}>
-          <ScrollView style={styles.container} contentContainerStyle={styles.contentContainer}>
+        <View>
+          <ScrollView>
             <Image  style={{
                           width: 400,
                           height: 400,
@@ -58,8 +74,8 @@ export default class HomeScreen extends React.Component {
         <View style={styles.container}>
           <ScrollView style={styles.container} contentContainerStyle={styles.contentContainer}>
               {items.map(({ nameuser,preuser,photouser, teluser, rueuser,descuser }) => (
-                <View>
-                  <View style={{flex: 1, flexDirection: 'row'}}>
+                <View key={'parent'}>
+                  <View style={{flex: 1, flexDirection: 'row'}} key={'top'}>
                       <Image style={{
                           width: 150,
                           height: 150,
@@ -70,24 +86,24 @@ export default class HomeScreen extends React.Component {
                         }} source={{
                           uri: photouser
                         }}/>
-                        <View style={{width: 150, height: 150,}}>
-                          <Text key={nameuser} style={styles.important}>
-                            Nom : {nameuser}
-                          </Text>
-                          <Text key={preuser} style={styles.important}>
-                            Prénom :{preuser}
-                          </Text>
-                          <Text key={teluser}>
-                            Téléphone : {teluser}
+                        <View style={{width: 150, height: 150,}} key={'infos1'}>
+                          <Text key={nameuser}>
+                           <Text style={styles.important}>Nom : </Text>{nameuser} {'\n'}
+                           <Text style={styles.important}>Prénom :</Text>{preuser}{'\n'}
+                           <Text style={styles.important}>Téléphone :</Text> {teluser}
                           </Text>
                         </View>
+                        <TouchableHighlight onPress={() => this._setMode(1)}>
+                          <Image
+                            style={styles.button}
+                            source={require('./../assets/images/edit.png')}
+                          />
+                        </TouchableHighlight>
                   </View>
-                  <View>
+                  <View  key={'infos2'}>
                     <Text>
-                      Adresse : {rueuser}
-                    </Text>
-                    <Text>
-                      Description : {descuser}
+                      <Text style={styles.important}>Adresse :</Text> {rueuser}{'\n'}
+                      <Text style={styles.important}>Description :</Text> {descuser}
                     </Text>
                   </View>
                 </View>
@@ -102,25 +118,37 @@ export default class HomeScreen extends React.Component {
       return (
         <View style={styles.container}>
           <ScrollView style={styles.container} contentContainerStyle={styles.contentContainer}>
-              {items.map(({ nameuser,preuser,photouser }) => (
-                <View style={{flex: 1, flexDirection: 'row'}}>
-                    <Image style={{
-                        width: 150,
-                        height: 150,
-                        resizeMode: 'contain',
-                      }} source={{
-                        uri: photouser
-                      }}/>
-                      <View style={{width: 150, height: 150,}}>
-                        <Text style={styles.important}>
-                          {nameuser}
-                        </Text>
-                        <Text style={styles.important}>
-                          {preuser}
-                        </Text>
-                      </View>
+                <View key={'parent'}>
+                  <View style={{flex: 1, flexDirection: 'row'}} key={'top'}>
+                      <Image style={{
+                          width: 150,
+                          height: 150,
+                          resizeMode: 'contain',
+                        }} source={{
+                          uri: this.state.change.photouser
+                        }}/>
+                        <View style={{width: 150, height: 150,}} key={'infos1'}>
+                          <TextInput
+                            style={styles.form}
+                            placeholder="Votre nom"
+                            value={this.state.change.nameuser}
+                            onChangeText={(nameuser) =>this.setState({change: { nameuser}})}
+                          />
+                           <TextInput
+                            style={styles.form}
+                            placeholder="Votre prénom"
+                            value={this.state.change.preuser}
+                            onChangeText={(preuser) =>this.setState({change: { preuser}})}
+                          />
+                        </View>
+                        <TouchableHighlight onPress={() => this._setMode(0)}>
+                          <Image
+                            style={styles.button}
+                            source={require('./../assets/images/edit.png')}
+                          />
+                        </TouchableHighlight>
+                  </View>
                 </View>
-              ))}
           </ScrollView>
         </View>
       );
@@ -132,6 +160,20 @@ export default class HomeScreen extends React.Component {
 const styles = StyleSheet.create({
   important: {
     fontSize: 20,
+  },
+  form: {
+    height: 40,
+    width:250,
+    marginLeft:15,
+    marginBottom:10,
+    borderBottomColor: 'grey',
+    borderBottomWidth: 1
+  },
+  button:{
+    height:30,
+    width: 30,
+    left:0,
+    top:0,
   },
   container: {
     flex: 1,

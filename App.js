@@ -112,28 +112,30 @@ export default class App extends React.Component {
             <ScrollView style={styles.container} contentContainerStyle={styles.contentContainer}>
               {Platform.OS === 'ios' && <StatusBar barStyle="default" />}
               <TextInput
-                style={{height: 40,width:250,marginLeft:15,marginBottom:10}}
+                style={styles.form}
                 placeholder="Identifiant"
                 value={this.state.ident}
                 onChangeText={(ident) => this.setState({ident})}
               />
               <TextInput
-                style={{height: 40,width:250,marginLeft:15,marginBottom:10}}
+                style={styles.form}
                 placeholder="Mot de passe"
                 value={this.state.pass}
                 secureTextEntry={true}
                 onChangeText={(pass) =>this.setState({pass})}
               />
               <Button 
-              style={{height: 40,width:250,marginLeft:15,marginBottom:10}}
+              style={styles.button}
               title="Se connecter" 
               onPress={this._login}></Button>
+
               <Text style={{padding: 10, fontSize: 42}}>
                 Ident :{this.state.ident}
               </Text>
               <Text style={{padding: 10, fontSize: 42}}>
                 Pass :{this.state.pass}
               </Text>
+
             </ScrollView>
           </View>
         );
@@ -176,6 +178,26 @@ const styles = StyleSheet.create({
     backgroundColor: '#fff',
   }, 
   contentContainer: {
-    paddingTop: 30,
+    paddingTop: 100,
+    paddingLeft: 30,
+    paddingRight: 30
   },
+  form: {
+    height: 40,
+    width:250,
+    marginLeft:15,
+    marginBottom:10,
+    borderBottomColor: 'grey',
+    borderBottomWidth: 1
+  },
+  button: {
+    height: 40,
+    width:250,
+    marginLeft:15,
+    marginRight:10,
+    borderColor: '#FF5722', 
+    borderRadius: 20,
+    backgroundColor : "#FFFFFF",
+    borderWidth: 2,
+  }
 });
